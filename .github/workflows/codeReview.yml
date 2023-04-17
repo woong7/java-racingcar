@@ -17,5 +17,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           LANGUAGE: Korean 
-					temperature: 0.75
-					top_p: 0.9
+	  temperature: 0.75
+	  top_p: 0.9
