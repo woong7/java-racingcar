@@ -1,0 +1,48 @@
+name: Code Review
+
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: anc95/ChatGPT-CodeReview@v1
+        id: review_comment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LANGUAGE: Korean
+          temperature: 0.75
+          top_p: 0.9
+      - uses: actions/github-script@v3
+        with:
+          script: |
+            await github.rest.pulls.updateReview({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              review_id: ${{ steps.review_comment.outputs.id }},
+              event: 'APPROVE'
+            });
+      - uses: actions/github-script@v3
+        with:
+          script: |
+            const { data } = await github.rest.issues.getComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: ${{ steps.review_comment.outputs.id }}
+            });
+
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: ${{ steps.review_comment.outputs.id }},
+              body: data.body,
+              status: 'updated'
+            });
