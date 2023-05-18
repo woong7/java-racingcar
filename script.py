@@ -90,7 +90,7 @@ async def main():
                     else:
                         versions[key] = None
                 rows.append(versions)
-                ## print(f'{repo_name}: {versions}')
+                print(f'{repo_name}: {versions}')
 
     print(f"\nTotal {target_repo_nums} repositories have dependencies on target libraries")
 
@@ -126,11 +126,10 @@ async def main():
     """
 
     # HTML 파일로 저장
-    with open("result.html", "w") as file:
+    with open("backend-version-info.html", "w") as file:
         file.write(html)
 
     print("HTML 파일로 저장되었습니다.")
-    print(html)
 
 
 # 비동기 함수 실행
