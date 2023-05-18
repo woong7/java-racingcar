@@ -17,11 +17,6 @@ jobs:
         with:
           python-version: 3.9
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install httpx
-
       - name: Run Python script
         run: python script.py > backend-version-info.html
 
