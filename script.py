@@ -158,12 +158,12 @@ async def main():
             <div class="image-container">
                 <h1>Support Duration</h1>
                 <div>
-                    <h2>Python Version Support</h2>
+                    <h2><a href="https://www.python.org/downloads/">Python Version Support</a></h2>
                     <img src="https://gw-version-test-bucket.s3.ap-northeast-2.amazonaws.com/python_version_info.png" alt="Python Version">
                 </div>
                 <div class="image-divider"></div>  <!-- 이미지 사이에 선 추가 -->
                 <div>
-                    <h2>Django Version Support</h2>
+                    <h2><a href="https://www.djangoproject.com/download/">Django Version Support</a></h2>
                     <img src="https://gw-version-test-bucket.s3.ap-northeast-2.amazonaws.com/django_version_info.png" alt="Django Version">
                 </div>
             </div>
