@@ -21,7 +21,7 @@ jobs:
 
       - name: Run Python script and upload output to S3
         run: |
-          python your_script.py > backend-version-info.html
+          python script.py > backend-version-info.html
           aws s3 cp backend-version-info.html s3://gw-version-test-bucket/backend-version-info.html
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
