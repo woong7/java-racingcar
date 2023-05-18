@@ -6,6 +6,7 @@ on:
 jobs:
   upload_to_s3:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'  # 원하는 브랜치 이름
 
     steps:
       - name: Checkout repository
@@ -17,7 +18,9 @@ jobs:
           python-version: 3.9
 
       - name: Install dependencies
-        run: pip install awscli
+        run: |
+          pip install awscli
+          pip install requests
 
       - name: Run Python script and upload output to S3
         run: |
