@@ -1,7 +1,7 @@
-name: Upload Output to S3
+name: Check repo status and upload to S3
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "0 0 * * *"  # 매일 자정에 최신화
 
 jobs:
   upload_to_s3:
