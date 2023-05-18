@@ -6,7 +6,7 @@ import os
 GITHUB_API_URL = "https://api.github.com"
 
 # Personal access token 설정
-token = os.environ.get('GITHUB_TOKEN')
+token = os.environ.get('GH_PAT')
 headers = {'Authorization': f'token {token}'}
 
 # organization 이름 설정
