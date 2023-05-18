@@ -2,8 +2,13 @@ import httpx
 import re
 import base64
 import os
+import boto3
 
 GITHUB_API_URL = "https://api.github.com"
+aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
+aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+s3_bucket_name = os.environ.get('AWS_S3_BUCKET')
+s3_object_key = os.environ.get('RESULT_FILE')
 
 # Personal access token 설정
 token = os.environ.get('GH_PAT')
@@ -125,15 +130,15 @@ async def main():
     </html>
     """
 
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-
-    html_file = os.path.join(base_dir, "backend-version-info.html")
-
     # HTML 파일로 저장
-    with open(html_file, "w") as file:
+    with open("result.html", "w") as file:
         file.write(html)
 
-    print("HTML 파일로 저장되었습니다.")
+    # S3에 파일 업로드
+    s3_client = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+    s3_client.upload_file("result.html", s3_bucket_name, s3_object_key, ExtraArgs={'ContentType': 'text/html'})
+
+    print("Uploaded to AWS S3")
 
 
 # 비동기 함수 실행
