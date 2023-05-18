@@ -6,7 +6,7 @@ on:
 jobs:
   upload_to_s3:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'  # 원하는 브랜치 이름
+    if: github.ref == 'refs/heads/master'  # 원하는 브랜치 이름
 
     steps:
       - name: Checkout repository
