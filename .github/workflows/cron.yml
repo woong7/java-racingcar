@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install awscli
-          pip install requests
+          pip install httpx
 
       - name: Run Python script and upload output to S3
         run: |
