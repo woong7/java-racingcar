@@ -125,8 +125,12 @@ async def main():
     </html>
     """
 
+    base_dir = os.getcwd()
+
+    html_file = os.path.join(base_dir, "backend-version-info.html")
+
     # HTML 파일로 저장
-    with open("backend-version-info.html", "w") as file:
+    with open(html_file, "w") as file:
         file.write(html)
 
     print("HTML 파일로 저장되었습니다.")
