@@ -125,7 +125,7 @@ async def main():
     </html>
     """
 
-    base_dir = os.getcwd()
+    base_dir = os.path.dirname(os.path.abspath(__file__))
 
     html_file = os.path.join(base_dir, "backend-version-info.html")
 
