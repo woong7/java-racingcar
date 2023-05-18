@@ -108,28 +108,69 @@ async def main():
         table_row += "</tr>"
         table_rows += table_row
 
+
     html = f"""
     <html>
     <head>
         <style>
-            table {{border-collapse: collapse;}}
+            .container {{
+                display: flex;
+            }}
+            table {{
+                border-collapse: collapse;
+                margin-bottom: 20px;
+                flex: 1;  /* 테이블을 동적으로 확장 */
+            }}
             th, td {{padding: 8px; border: 1px solid #ddd;}}
+            .image-container {{
+                margin-left: 20px;
+                border-top: 1px solid #ddd;  /* 상단 선 추가 */
+                padding-top: 10px;  /* 선과 이미지 사이 간격 조정 */
+                background-color: #f5f5f5;  /* 음영 효과 추가 */
+                flex: 0 0 300px;  /* 이미지 컨테이너 고정 너비 */
+            }}
+            .image-container p {{
+                font-weight: bold;
+                margin-bottom: 5px;
+            }}
+            .image-divider {{
+                border-top: 1px solid #ddd;
+                margin-top: 20px;
+                padding-top: 10px;
+            }}
         </style>
     </head>
     <body>
-        <table>
-            <tr>
-                <th>Repository</th>
-                <th>Python Version</th>
-                <th>Django Version</th>
-                <th>DRF Version</th>
-            </tr>
-            {table_rows}
-        </table>
+        <div class="container">
+            <div>
+                <h1>Current Repositories Status</h1>
+                <table>
+                    <tr>
+                        <th>Repository</th>
+                        <th>Python Version</th>
+                        <th>Django Version</th>
+                        <th>DRF Version</th>
+                    </tr>
+                    {table_rows}
+                </table>
+            </div>
+            
+            <div class="image-container">
+                <h1>Support Duration</h1>
+                <div>
+                    <h2>Python Version Support</h2>
+                    <img src="https://gw-version-test-bucket.s3.ap-northeast-2.amazonaws.com/python_version_info.png" alt="Python Version">
+                </div>
+                <div class="image-divider"></div>  <!-- 이미지 사이에 선 추가 -->
+                <div>
+                    <h2>Django Version Support</h2>
+                    <img src="https://gw-version-test-bucket.s3.ap-northeast-2.amazonaws.com/django_version_info.png" alt="Django Version">
+                </div>
+            </div>
+        </div>
     </body>
     </html>
     """
-
     # HTML 파일로 저장
     with open("result.html", "w") as file:
         file.write(html)
