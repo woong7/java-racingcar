@@ -3,15 +3,19 @@ import re
 import base64
 import os
 import boto3
+import datetime
 
 GITHUB_API_URL = "https://api.github.com"
 aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
 aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
 s3_bucket_name = os.environ.get('AWS_S3_BUCKET')
 s3_object_key = os.environ.get('RESULT_FILE')
+s3_region = os.environ.get('AWS_S3_REGION')
+
+s3_bucket_uri = f"https://{s3_bucket_name}.s3.{s3_region}.amazonaws.com"
 
 # Personal access token 설정
-token = os.environ.get('GH_PAT')
+token = os.environ.get('GITHUB_TOKEN')
 headers = {'Authorization': f'token {token}'}
 
 # organization 이름 설정
@@ -86,7 +90,7 @@ async def main():
                 decoded_content = base64.b64decode(content).decode('utf-8')
 
                 versions = {}
-                versions['Repository'] = f"<a href='https://github.com/birdviewdev/{repo_name}'>{repo_name}</a>"  # 레포지토리 이름 추가
+                versions['Repository'] = f"<a href='https://github.com/{org_name}/{repo_name}'>{repo_name}</a>"  # 레포지토리 이름 추가
 
                 for key, pattern in target_libs.items():
                     match = re.search(pattern, decoded_content, re.MULTILINE)
@@ -99,6 +103,9 @@ async def main():
 
     print(f"\nTotal {target_repo_nums} repositories have dependencies on target libraries")
 
+    # 현재 시간 계산
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
     # HTML 템플릿 생성
     table_rows = ""
     for row in rows:
@@ -108,30 +115,65 @@ async def main():
         table_row += "</tr>"
         table_rows += table_row
 
-
     html = f"""
     <html>
     <head>
+        <meta charset="UTF-8">
         <style>
+            body {{
+                font-family: Arial, sans-serif;
+            }}
             .container {{
                 display: flex;
+                align-items: flex-start;
+                justify-content: center;
+                margin: 20px;
+            }}
+            .title {{
+                display: flex;
+                align-items: center;
+                font-size: 32px;
+                font-weight: bold;
+                margin-bottom: 20px;
+            }}
+            .title img {{
+                margin-right: 10px;
+                width: 180px;
+                height: 180px;
+            }}
+            .title-text {{
+                margin-left: 10px;
+            }}
+            .time {{
+                font-size: 16px;
+                margin-top: 5px;
+                color: #888;  
+                text-align: center;
             }}
             table {{
                 border-collapse: collapse;
-                margin-bottom: 20px;
-                flex: 1;  /* 테이블을 동적으로 확장 */
+                flex: 1;
+                margin-right: 20px;
+                background-color: #f9f9f9;
+                border: 1px solid #ddd;
+                border-radius: 4px;
             }}
-            th, td {{padding: 8px; border: 1px solid #ddd;}}
+            th, td {{
+                padding: 10px;
+                border: 1px solid #ddd;
+                text-align: center;
+            }}
+            th {{
+                background-color: #f5f5f5;
+                cursor: pointer;
+            }}
             .image-container {{
-                margin-left: 20px;
-                border-top: 1px solid #ddd;  /* 상단 선 추가 */
-                padding-top: 10px;  /* 선과 이미지 사이 간격 조정 */
-                background-color: #f5f5f5;  /* 음영 효과 추가 */
-                flex: 0 0 300px;  /* 이미지 컨테이너 고정 너비 */
+                flex: 0 0 300px;
             }}
             .image-container p {{
                 font-weight: bold;
-                margin-bottom: 5px;
+                margin-bottom: 10px;
+                text-align: center;
             }}
             .image-divider {{
                 border-top: 1px solid #ddd;
@@ -139,40 +181,64 @@ async def main():
                 padding-top: 10px;
             }}
         </style>
+        <script>
+            function sortTable(column) {{
+                const table = document.getElementById("repositories-table");
+                const rows = Array.from(table.rows).slice(1);  // 테이블 행을 배열로 변환하고 첫 번째 행(헤더) 제외
+
+                rows.sort(function(a, b) {{
+                    const textA = a.cells[column].textContent.trim();
+                    const textB = b.cells[column].textContent.trim();
+                    return textA.localeCompare(textB, 'en', {{ numeric: true, sensitivity: 'base' }});
+                }});
+
+                // 정렬된 행을 테이블에 다시 추가
+                rows.forEach(function(row) {{
+                    table.appendChild(row);
+                }});
+            }}
+        </script>
     </head>
     <body>
         <div class="container">
+            <div class="title">
+                <img src="{s3_bucket_uri}/bep_logo.png" alt="Logo">
+                <div class="title-text">
+                    Birdview Backend Repositories Version Dashboard
+                    <div class="time">Recently updated at {current_time}</div>
+                </div>
+                <img src="{s3_bucket_uri}/bep_logo.png" alt="Logo" style="transform: scaleX(-1);">
+            </div>
+        </div>
+        <div class="container">
             <div>
-                <h1>Current Repositories Status</h1>
-                <table>
+                <h2>Current Repositories Status</h2>
+                <p> -> Click on column title to sort by that column</p>
+                <table id="repositories-table">
                     <tr>
-                        <th>Repository</th>
-                        <th>Python Version</th>
-                        <th>Django Version</th>
-                        <th>DRF Version</th>
+                        <th onclick="sortTable(0)">Repository</th>
+                        <th onclick="sortTable(1)">Python Version</th>
+                        <th onclick="sortTable(2)">Django Version</th>
+                        <th onclick="sortTable(3)">DRF Version</th>
                     </tr>
                     {table_rows}
                 </table>
             </div>
             
             <div class="image-container">
-                <h1>Support Duration</h1>
-                <div>
-                    <h2><a href="https://www.python.org/downloads/">Python Version Support</a></h2>
-                    <img src="https://gw-version-test-bucket.s3.ap-northeast-2.amazonaws.com/python_version_info.png" alt="Python Version">
-                </div>
-                <div class="image-divider"></div>  <!-- 이미지 사이에 선 추가 -->
-                <div>
-                    <h2><a href="https://www.djangoproject.com/download/">Django Version Support</a></h2>
-                    <img src="https://gw-version-test-bucket.s3.ap-northeast-2.amazonaws.com/django_version_info.png" alt="Django Version">
-                </div>
+                <p><a href="https://www.python.org/downloads/">Python Version Support</a></p>
+                <img src="{s3_bucket_uri}/python_version_info.png" alt="Python Version">
+                <div class="image-divider"></div>
+                <p><a href="https://www.djangoproject.com/download/">Django Version Support</a></p>
+                <img src="{s3_bucket_uri}/django_version_info.png" alt="Django Version">
             </div>
         </div>
     </body>
     </html>
     """
+
     # HTML 파일로 저장
-    with open("result.html", "w") as file:
+    with open("result.html", "w", encoding="utf-8") as file:
         file.write(html)
 
     # S3에 파일 업로드
