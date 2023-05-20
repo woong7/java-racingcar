@@ -121,7 +121,8 @@ class HTMLGenerator:
                             <th onclick="sortTable(0)">Repository</th>
                             <th onclick="sortTable(1)">Python Version</th>
                             <th onclick="sortTable(2)">Django Version</th>
-                            <th onclick="sortTable(3)">DRF Version</th>
+                            <th onclick="sortTable(3)">DRF Version</th> 
+                            <th onclick="sortTable(4)">Updated At</th>
                         </tr>
                         {table_rows}
                     </table>

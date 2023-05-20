@@ -1,3 +1,5 @@
+import datetime
+
 import httpx
 
 from pip_parser import PipFileParser
@@ -10,6 +12,27 @@ class OrganizationRepositoriesStore:
         self.repos_data = repos_data
         self.org_name = org_name
         self.headers = {'Authorization': f'token {token}'}
+
+    async def get_last_commit_date(self, url):
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, headers=self.headers)
+
+            if response.status_code == 200:
+                branch_data = response.json()
+                last_commit_date = branch_data['commit']['commit']['committer']['date']
+                return datetime.datetime.strptime(last_commit_date, "%Y-%m-%dT%H:%M:%SZ").strftime("%Y-%m-%d %H:%M:%S")
+
+        return None
+
+    async def get_updated_at(self, org_name, repo_name):
+        target_branches = ['develop', 'main', 'master']
+        for branch in target_branches:
+            url = f"https://api.github.com/repos/{org_name}/{repo_name}/branches/{branch}"
+            updated_at = await self.get_last_commit_date(url)
+            if updated_at is not None:
+                return updated_at
+        return None
+
 
     async def analyze_repos(self, deprecated_repos: list, pip_parser: PipFileParser):
         target_repo_nums = 0
@@ -28,6 +51,8 @@ class OrganizationRepositoriesStore:
                     target_repo_nums += 1
 
                     versions = pip_parser.parse_pip_file(response, self.org_name, repo_name)
+
+                    versions['Updated At'] = await self.get_updated_at(self.org_name, repo_name)
 
                     rows.append(versions)
                     print(f'{repo_name}: {versions}')

@@ -12,7 +12,7 @@ s3_region = os.environ.get('AWS_S3_REGION')
 s3_bucket_uri = f"https://{s3_bucket_name}.s3.{s3_region}.amazonaws.com"
 
 # Personal access token 설정
-token = os.environ.get('GITHUB_TOKEN')
+token = os.environ.get('GH_PAT')
 
 # organization 이름 설정
 org_name = 'birdviewdev'
