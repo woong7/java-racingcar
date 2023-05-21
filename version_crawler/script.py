@@ -1,6 +1,7 @@
 import datetime
 
-from constants import token, org_name, deprecated_repos, aws_credential, s3_bucket_name, s3_bucket_uri, python_target_libs, js_target_libs
+from constants import token, org_name, deprecated_repos, aws_credential, s3_bucket_name, s3_bucket_uri, \
+    python_target_libs, js_target_libs
 from github_crawler import GithubCrawler
 from org_repos_store import OrganizationRepositoriesStore
 from s3_uploader import S3Uploader
@@ -22,20 +23,11 @@ async def crawl_repos_in_org():
     return OrganizationRepositoriesStore(repos_data, org_name, token)
 
 
-async def parse_python_data_from_org_repos_store(org_repos_store: OrganizationRepositoriesStore):
-    pip_file_parser = FileParser(python_target_libs)
+async def parse_data_from_org_repos_store(org_repos_store: OrganizationRepositoriesStore, target_libs: dict,
+                                          file_name: str):
+    file_parser = FileParser(target_libs)
 
-    target_repo_nums, rows = await org_repos_store.analyze_repos(deprecated_repos, pip_file_parser, 'Pipfile')
-
-    print(f"\nTotal {target_repo_nums} repositories have dependencies on target libraries")
-
-    return rows
-
-
-async def parse_js_data_from_org_repos_store(org_repos_store: OrganizationRepositoriesStore):
-    pip_file_parser = FileParser(js_target_libs)
-
-    target_repo_nums, rows = await org_repos_store.analyze_repos(deprecated_repos, pip_file_parser, 'package.json')
+    target_repo_nums, rows = await org_repos_store.analyze_repos(deprecated_repos, file_parser, file_name)
 
     print(f"\nTotal {target_repo_nums} repositories have dependencies on target libraries")
 
@@ -75,11 +67,11 @@ def generate_js_html_and_upload_to_s3(rows: list):
 async def main():
     org_repos_store = await crawl_repos_in_org()
 
-    rows_python = await parse_python_data_from_org_repos_store(org_repos_store)
+    rows_python = await parse_data_from_org_repos_store(org_repos_store, python_target_libs, 'Pipfile')
 
     generate_python_html_and_upload_to_s3(rows_python)
 
-    rows_js = await parse_js_data_from_org_repos_store(org_repos_store)
+    rows_js = await parse_data_from_org_repos_store(org_repos_store, js_target_libs, 'package.json')
 
     generate_js_html_and_upload_to_s3(rows_js)
 
