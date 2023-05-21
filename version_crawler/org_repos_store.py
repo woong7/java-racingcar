@@ -2,7 +2,7 @@ import datetime
 
 import httpx
 
-from pip_parser import PipFileParser
+from version_crawler.file_parser.file_parser import FileParser
 
 GITHUB_API_URL = "https://api.github.com"
 
@@ -33,8 +33,7 @@ class OrganizationRepositoriesStore:
                 return updated_at
         return None
 
-
-    async def analyze_repos(self, deprecated_repos: list, pip_parser: PipFileParser):
+    async def analyze_repos(self, deprecated_repos: list, parser: FileParser, file_name: str):
         target_repo_nums = 0
         rows = []
 
@@ -44,13 +43,13 @@ class OrganizationRepositoriesStore:
                 if repo_name in deprecated_repos:
                     continue
 
-                pipfile_api_url = f'{GITHUB_API_URL}/repos/{self.org_name}/{repo_name}/contents/Pipfile'
+                pipfile_api_url = f'{GITHUB_API_URL}/repos/{self.org_name}/{repo_name}/contents/{file_name}'
                 response = await client.get(pipfile_api_url, headers=self.headers)
 
                 if response.status_code == 200:
                     target_repo_nums += 1
 
-                    versions = pip_parser.parse_pip_file(response, self.org_name, repo_name)
+                    versions = parser.parse_file(response, self.org_name, repo_name)
 
                     versions['Updated At'] = await self.get_updated_at(self.org_name, repo_name)
 

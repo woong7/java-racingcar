@@ -1,18 +1,7 @@
-def create_table_from_rows(rows):
-    table_rows = ""
-    for row in rows:
-        table_row = "<tr>"
-        for value in row.values():
-            table_row += f"<td>{value}</td>"
-        table_row += "</tr>"
-        table_rows += table_row
-
-    return table_rows
+from version_crawler.html_generator.html_generator import HTMLGenerator, create_table_from_rows
 
 
-class HTMLGenerator:
-    def __init__(self, s3_bucket_uri: str):
-        self.s3_bucket_uri = s3_bucket_uri
+class JSHTMLGenerator(HTMLGenerator):
 
     def generate_html(self, rows, current_time):
         table_rows = create_table_from_rows(rows)
@@ -106,7 +95,7 @@ class HTMLGenerator:
                 <div class="title">
                     <img src="{self.s3_bucket_uri}/bep_logo.png" alt="Logo">
                     <div class="title-text">
-                        Birdview Backend Repositories Version Dashboard
+                        Birdview JS Repositories Version Dashboard
                         <div class="time">Recently updated at {current_time}</div>
                     </div>
                     <img src="{self.s3_bucket_uri}/bep_logo.png" alt="Logo" style="transform: scaleX(-1);">
@@ -119,9 +108,9 @@ class HTMLGenerator:
                     <table id="repositories-table">
                         <tr>
                             <th onclick="sortTable(0)">Repository</th>
-                            <th onclick="sortTable(1)">Python Version</th>
-                            <th onclick="sortTable(2)">Django Version</th>
-                            <th onclick="sortTable(3)">DRF Version</th> 
+                            <th onclick="sortTable(1)">Node Version</th>
+                            <th onclick="sortTable(2)">TS Version</th>
+                            <th onclick="sortTable(3)">Jest Version</th> 
                             <th onclick="sortTable(4)">Updated At</th>
                         </tr>
                         {table_rows}

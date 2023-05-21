@@ -1,12 +1,13 @@
 import datetime
 
-from constants import token, org_name, target_libs, deprecated_repos, aws_credential, s3_bucket_name, s3_object_key, \
-    s3_bucket_uri
+from constants import token, org_name, deprecated_repos, aws_credential, s3_bucket_name, s3_bucket_uri, python_target_libs, js_target_libs
 from github_crawler import GithubCrawler
-from html_generator import HTMLGenerator
 from org_repos_store import OrganizationRepositoriesStore
-from pip_parser import PipFileParser
 from s3_uploader import S3Uploader
+
+from version_crawler.file_parser.file_parser import FileParser
+from version_crawler.html_generator.js_html_generator import JSHTMLGenerator
+from version_crawler.html_generator.python_html_generator import PythonHTMLGenerator
 
 
 # GitHub API에서 organization에 속한 레포지토리 정보 가져오기
@@ -21,37 +22,66 @@ async def crawl_repos_in_org():
     return OrganizationRepositoriesStore(repos_data, org_name, token)
 
 
-async def parse_data_from_org_repos_store(org_repos_store: OrganizationRepositoriesStore):
-    pip_parser = PipFileParser(target_libs)
+async def parse_python_data_from_org_repos_store(org_repos_store: OrganizationRepositoriesStore):
+    pip_file_parser = FileParser(python_target_libs)
 
-    target_repo_nums, rows = await org_repos_store.analyze_repos(deprecated_repos, pip_parser)
+    target_repo_nums, rows = await org_repos_store.analyze_repos(deprecated_repos, pip_file_parser, 'Pipfile')
 
     print(f"\nTotal {target_repo_nums} repositories have dependencies on target libraries")
 
     return rows
 
 
-def generate_html_and_upload_to_s3(rows: list):
+async def parse_js_data_from_org_repos_store(org_repos_store: OrganizationRepositoriesStore):
+    pip_file_parser = FileParser(js_target_libs)
+
+    target_repo_nums, rows = await org_repos_store.analyze_repos(deprecated_repos, pip_file_parser, 'package.json')
+
+    print(f"\nTotal {target_repo_nums} repositories have dependencies on target libraries")
+
+    return rows
+
+
+def generate_python_html_and_upload_to_s3(rows: list):
     # 현재 시간 계산
     current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    html = HTMLGenerator(s3_bucket_uri=s3_bucket_uri).generate_html(rows, current_time)
+    html = PythonHTMLGenerator(s3_bucket_uri=s3_bucket_uri).generate_html(rows, current_time)
 
-    file_name = "result.html"
+    file_name = "result_python.html"
 
     # HTML 파일로 저장
     with open(file_name, "w", encoding="utf-8") as file:
         file.write(html)
 
-    S3Uploader(aws_credential, s3_bucket_name, s3_object_key).upload_to_s3(file_name)
+    S3Uploader(aws_credential, s3_bucket_name, 'backend-version-info.html').upload_to_s3(file_name)
+
+
+def generate_js_html_and_upload_to_s3(rows: list):
+    # 현재 시간 계산
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    html = JSHTMLGenerator(s3_bucket_uri=s3_bucket_uri).generate_html(rows, current_time)
+
+    file_name = "result_js.html"
+
+    # HTML 파일로 저장
+    with open(file_name, "w", encoding="utf-8") as file:
+        file.write(html)
+
+    S3Uploader(aws_credential, s3_bucket_name, 'js-version-info.html').upload_to_s3(file_name)
 
 
 async def main():
     org_repos_store = await crawl_repos_in_org()
 
-    rows = await parse_data_from_org_repos_store(org_repos_store)
+    rows_python = await parse_python_data_from_org_repos_store(org_repos_store)
 
-    generate_html_and_upload_to_s3(rows)
+    generate_python_html_and_upload_to_s3(rows_python)
+
+    rows_js = await parse_js_data_from_org_repos_store(org_repos_store)
+
+    generate_js_html_and_upload_to_s3(rows_js)
 
 
 # 비동기 함수 실행

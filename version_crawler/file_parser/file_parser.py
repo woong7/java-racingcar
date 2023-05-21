@@ -2,11 +2,11 @@ import base64
 import re
 
 
-class PipFileParser:
+class FileParser:
     def __init__(self, target_libs: dict):
         self.target_libs = target_libs
 
-    def parse_pip_file(self, response, org_name: str, repo_name: str):
+    def parse_file(self, response, org_name: str, repo_name: str):
         content = response.json()['content']
         decoded_content = base64.b64decode(content).decode('utf-8')
 
