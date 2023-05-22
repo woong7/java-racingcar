@@ -2,7 +2,7 @@ import datetime
 
 import httpx
 
-from version_crawler.file_parser.file_parser import FileParser
+from version_crawler.file_parser import FileParser
 
 GITHUB_API_URL = "https://api.github.com"
 
