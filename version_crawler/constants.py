@@ -31,5 +31,5 @@ js_target_libs = {
 
 ## 사용하지 않는 레포지토리 설정
 deprecated_repos = [
-    'drf-api-common'
+ ##   'drf-api-common'
 ]
